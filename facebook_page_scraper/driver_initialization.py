@@ -10,6 +10,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 from fake_useragent import UserAgent
 import logging
 from tbselenium.tbdriver import TorBrowserDriver
+import os
 
 logger = logging.getLogger(__name__)
 format = logging.Formatter(
@@ -89,7 +90,10 @@ class Initializer:
             return webdriver.Firefox(executable_path=GeckoDriverManager(path=self.path).install(), options=self.set_properties(browser_option))
         elif browser_name.lower() == "tor":
             browser_option = FirefoxOptions()
-            driver = TorBrowserDriver("C:\\Tor Browser", executable_path=GeckoDriverManager(path=self.path).install(), options=self.set_properties(browser_option))
+            tor_browser_path = os.getenv('TOR_BROWSER_PATH')
+            if tor_browser_path is None:
+                raise Exception("TOR_BROWSER_PATH should be set")
+            driver = TorBrowserDriver(tor_browser_path, executable_path=GeckoDriverManager(path=self.path).install(), options=self.set_properties(browser_option))
             return driver
         else:
             # if browser_name is not chrome neither firefox than raise an exception

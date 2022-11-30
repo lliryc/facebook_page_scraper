@@ -7,7 +7,9 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 # import webdriver for downloading respective driver for the browser
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
+from fake_useragent import UserAgent
 import logging
+from tbselenium.tbdriver import TorBrowserDriver
 
 logger = logging.getLogger(__name__)
 format = logging.Formatter(
@@ -19,11 +21,12 @@ logger.addHandler(ch)
 
 class Initializer:
 
-    def __init__(self, browser_name, proxy=None, headless=True, profile=None):
+    def __init__(self, browser_name, proxy=None, headless=True, profile=None, path=None):
         self.browser_name = browser_name
         self.proxy = proxy
         self.headless = headless
         self.profile = profile
+        self.path = path
 
     def set_properties(self, browser_option):
         """adds capabilities to the driver"""
@@ -68,19 +71,26 @@ class Initializer:
 
             return webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=self.set_properties(browser_option))
         elif browser_name.lower() == "firefox":
+            useragent = UserAgent()
             browser_option = FirefoxOptions()
+            browser_option.set_preference("general.useragent.override",useragent.firefox)
             if self.proxy is not None:
                 options = {
                     'https': 'https://{}'.format(self.proxy.replace(" ", "")),
                     'http': 'http://{}'.format(self.proxy.replace(" ", "")),
                     'no_proxy': 'localhost, 127.0.0.1'
                 }
-                logger.info("Using: {}".format(self.proxy))
-                return webdriver.Firefox(executable_path=GeckoDriverManager().install(),
-                                         options=self.set_properties(browser_option), seleniumwire_options=options)
+                return webdriver.Firefox(executable_path=GeckoDriverManager(path=self.path).install(),
+                                         options=self.set_properties(browser_option)
+                                         ,seleniumwire_options=options
+                                         )
 
             # automatically installs geckodriver and initialize it and returns the instance
-            return webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=self.set_properties(browser_option))
+            return webdriver.Firefox(executable_path=GeckoDriverManager(path=self.path).install(), options=self.set_properties(browser_option))
+        elif browser_name.lower() == "tor":
+            browser_option = FirefoxOptions()
+            driver = TorBrowserDriver("C:\\Tor Browser", executable_path=GeckoDriverManager(path=self.path).install(), options=self.set_properties(browser_option))
+            return driver
         else:
             # if browser_name is not chrome neither firefox than raise an exception
             raise Exception("Browser not supported!")
@@ -88,4 +98,5 @@ class Initializer:
     def init(self):
         """returns driver instance"""
         driver = self.set_driver_for_browser(self.browser_name)
+        #res = driver.get('https://icanhazip.com/')
         return driver

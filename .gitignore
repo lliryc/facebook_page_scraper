@@ -78,3 +78,8 @@ pythonenv*
 .prof
 
 /tests.py
+
+/shelf/
+/workspace.xml
+/.idea/
+/gecko/

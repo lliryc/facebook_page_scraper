@@ -3,8 +3,6 @@ import json
 import unittest
 import json
 
-
-
 class Test_json(unittest.TestCase):
 
     def is_name_empty(self,dictionary):
@@ -21,8 +19,14 @@ class Test_json(unittest.TestCase):
         
         self.assertEqual(len(data_dictionary),10)
         self.assertFalse(self.is_name_empty(data_dictionary),"Getting empty strings on name attribute")
-        
-             
+
+class Test_path(unittest.TestCase):
+
+    def test_scraper_for_json(self):
+        facebook_ai = facebook_page_scraper.Facebook_scraper("boeing",1,"tor", path='C:\\repos\\facebook_page_scraper\\gecko',timeout=30, headless=True)
+        json_data = facebook_ai.scrap_to_json()
+        data_dictionary = json.loads(json_data)
+        self.assertEqual(len(data_dictionary),1)
 
 class Test_csv_output(unittest.TestCase):
     
